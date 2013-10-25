@@ -96,7 +96,7 @@ def original_dst(sock):
 
 
 class FirewallClient:
-    def __init__(self, port, subnets_include, subnets_exclude, dnsport, route_username):
+    def __init__(self, port, subnets_include, subnets_exclude, dnsport, route_username, excludedports):
         self.port = port
         self.auto_nets = []
         self.subnets_include = subnets_include
@@ -104,7 +104,9 @@ class FirewallClient:
         self.dnsport = dnsport
         argvbase = ([sys.argv[1], sys.argv[0], sys.argv[1]] +
                     ['-v'] * (helpers.verbose or 0) +
-                    ['--firewall', str(port), str(dnsport), '--username', route_username])
+                    ['--firewall', str(port), str(dnsport),
+                     '--username', route_username or '',
+                     '--eports', excludedports or ''])
         if ssyslog._p:
             argvbase += ['--syslog']
         argv_tries = [
@@ -338,7 +340,7 @@ def _main(listener, fw, ssh_cmd, remotename, python, latency_control,
 
 def main(listenip, ssh_cmd, remotename, python, latency_control, dns,
          seed_hosts, auto_nets,
-         subnets_include, subnets_exclude, syslog, daemon, pidfile, route_username):
+         subnets_include, subnets_exclude, syslog, daemon, pidfile, route_username, excludedports):
     if syslog:
         ssyslog.start_syslog()
     if daemon:
@@ -385,7 +387,7 @@ def main(listenip, ssh_cmd, remotename, python, latency_control, dns,
         dnsport = 0
         dnslistener = None
 
-    fw = FirewallClient(listenip[1], subnets_include, subnets_exclude, dnsport, route_username)
+    fw = FirewallClient(listenip[1], subnets_include, subnets_exclude, dnsport, route_username, excludedports)
     
     try:
         return _main(listener, fw, ssh_cmd, remotename,

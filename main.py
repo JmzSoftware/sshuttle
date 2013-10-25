@@ -77,6 +77,7 @@ V,version  print sshuttle's version number
 syslog     send log messages to syslog (default if you use --daemon)
 pidfile=   pidfile name (only if using --daemon) [./sshuttle.pid]
 u,username= route packets only from the specified username (required iptables with -m owner support)
+eports=    Exclude this list of ports (separated by comma with no spaces)
 server     (internal use only)
 firewall   (internal use only)
 hostwatch  (internal use only)
@@ -104,7 +105,7 @@ try:
     elif opt.firewall:
         if len(extra) != 2:
             o.fatal('exactly two arguments expected')
-        sys.exit(firewall.main(int(extra[0]), int(extra[1]), opt.syslog, opt.username))
+        sys.exit(firewall.main(int(extra[0]), int(extra[1]), opt.syslog, opt.username, opt.eports))
     elif opt.hostwatch:
         sys.exit(hostwatch.hw_main(extra))
     else:
@@ -138,7 +139,7 @@ try:
                              opt.auto_nets,
                              parse_subnets(includes),
                              parse_subnets(excludes),
-                             opt.syslog, opt.daemon, opt.pidfile, opt.username))
+                             opt.syslog, opt.daemon, opt.pidfile, opt.username, opt.eports))
 except FatalNeedsReboot, e:
     log('You must reboot before using sshuttle.\n')
     sys.exit(EXITCODE_NEEDS_REBOOT)
