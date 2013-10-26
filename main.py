@@ -105,7 +105,7 @@ try:
     elif opt.firewall:
         if len(extra) != 2:
             o.fatal('exactly two arguments expected')
-        sys.exit(firewall.main(int(extra[0]), int(extra[1]), opt.syslog, opt.username, opt.eports))
+        sys.exit(firewall.main(int(extra[0]), int(extra[1]), opt.syslog, opt.username, str(opt.eports)))
     elif opt.hostwatch:
         sys.exit(hostwatch.hw_main(extra))
     else:
@@ -139,7 +139,7 @@ try:
                              opt.auto_nets,
                              parse_subnets(includes),
                              parse_subnets(excludes),
-                             opt.syslog, opt.daemon, opt.pidfile, opt.username, opt.eports))
+                             opt.syslog, opt.daemon, opt.pidfile, opt.username, str(opt.eports)))
 except FatalNeedsReboot, e:
     log('You must reboot before using sshuttle.\n')
     sys.exit(EXITCODE_NEEDS_REBOOT)
