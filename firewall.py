@@ -1,3 +1,5 @@
+# vim: set tabstop=4 expandtab :
+
 import re, errno, socket, select, signal, struct
 import compat.ssubprocess as ssubprocess
 import helpers, ssyslog
@@ -92,17 +94,24 @@ def do_iptables(port, dnsport, subnets):
         # to least-specific, and at any given level of specificity, we want
         # excludes to come first.  That's why the columns are in such a non-
         # intuitive order.
-        for swidth,sexclude,snet in sorted(subnets, reverse=True):
+        for swidth,sport,sexclude,snet in sorted(subnets, reverse=True):
             if sexclude:
-                ipt('-A', chain, '-j', 'RETURN',
-                    '--dest', '%s/%s' % (snet,swidth),
-                    '-p', 'tcp')
+                if sport > 0:
+                    ipt('-A', chain, '-j', 'RETURN',
+                        '--dest', '%s/%s' % (snet,swidth),
+                        '-m', 'tcp',
+                        '--dport', '%d' % sport,
+                        '-p', 'tcp')
+                else:
+                    ipt('-A', chain, '-j', 'RETURN',
+                        '--dest', '%s/%s' % (snet,swidth),
+                        '-p', 'tcp')
             else:
                 ipt_ttl('-A', chain, '-j', 'REDIRECT',
                         '--dest', '%s/%s' % (snet,swidth),
                         '-p', 'tcp',
                         '--to-ports', str(port))
-                
+
     if dnsport:
         nslist = resolvconf_nameservers()
         for ip in nslist:
@@ -508,10 +517,10 @@ def main(port, dnsport, syslog):
         elif line == 'GO\n':
             break
         try:
-            (width,exclude,ip) = line.strip().split(',', 2)
+            (width,dport,exclude,ip) = line.strip().split(',', 3)
         except:
             raise Fatal('firewall: expected route or GO but got %r' % line)
-        subnets.append((int(width), bool(int(exclude)), ip))
+        subnets.append((int(width), int(dport), bool(int(exclude)), ip))
         
     try:
         if line:
