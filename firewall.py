@@ -107,7 +107,15 @@ def do_iptables(port, dnsport, subnets):
                         '--dest', '%s/%s' % (snet,swidth),
                         '-p', 'tcp')
             else:
-                ipt_ttl('-A', chain, '-j', 'REDIRECT',
+                if sport > 0:
+                    ipt_ttl('-A', chain, '-j', 'REDIRECT',
+                        '--dest', '%s/%s' % (snet,swidth),
+                        '-m', 'tcp',
+                        '--dport', '%d' % sport,
+                        '-p', 'tcp',
+                        '--to-ports', str(port))
+                else:
+                    ipt_ttl('-A', chain, '-j', 'REDIRECT',
                         '--dest', '%s/%s' % (snet,swidth),
                         '-p', 'tcp',
                         '--to-ports', str(port))
